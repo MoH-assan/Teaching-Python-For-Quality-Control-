@@ -1,0 +1,9 @@
+def AppendixVI(n,factor=['A','n','A','A2','A3','c4','1/c4','B3','B4','B5','B6','d2','1/d2','d3','D1','D2','D3','D4'][-4]):
+    #Note that appendix AppendixVI is based on 0.997 confidence level (i.e. z_zalpha_2`~2.97)'
+    '''
+    Just an alternative for looking up the table
+    n: sample size
+    factor: factor to be checked at n 
+    '''
+    AppendixVI=pd.read_csv('AppendixVI.csv',index_col='n')
+    return AppendixVI[factor][n]
