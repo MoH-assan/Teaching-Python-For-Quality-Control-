@@ -1,0 +1,99 @@
+# %% [markdown]
+# # Introduction:
+# In this code, we will simulate the distribution of sample means by generating random samples from a normal distribution and calculating the mean of each sample. We will then use both analytical and simulation methods to calculate the 95% confidence interval and standard deviation of the sample means and compare the results. 
+# 
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:11.857703Z","iopub.execute_input":"2023-01-12T23:09:11.859013Z","iopub.status.idle":"2023-01-12T23:09:11.863545Z","shell.execute_reply.started":"2023-01-12T23:09:11.858968Z","shell.execute_reply":"2023-01-12T23:09:11.862688Z"}}
+import numpy as np # NumPy is a library for the Python programming language, adding support for large, multi-dimensional arrays and matrices, along with a large collection of high-level mathematical functions to operate on these arrays.
+from scipy.stats import norm # SciPy is a library for the Python programming language, adding support for optimization, signal processing, statistics, and more. The `norm` module of the `scipy.stats` library is used to work with the normal distribution and calculate critical values.
+
+
+# %% [markdown]
+# ## Define the population and sample
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:11.865819Z","iopub.execute_input":"2023-01-12T23:09:11.866927Z","iopub.status.idle":"2023-01-12T23:09:11.877260Z","shell.execute_reply.started":"2023-01-12T23:09:11.866871Z","shell.execute_reply":"2023-01-12T23:09:11.875861Z"}}
+# Define the population mean and standard deviation
+pop_mean = 100
+pop_std = 20
+
+# Define the sample size
+sample_size = 30
+
+# Define the number of simulations
+num_sims = 10000
+
+#Defince our desired confidence Level
+alpha = 0.05
+
+# %% [markdown]
+# ## Analytical Methods
+# The Central Limit Theorem states that the distribution of sample means approaches a normal distribution as the sample size increases. Therefore, we can use the normal distribution to approximate the distribution of sample means and calculate the standard error of the mean (sem).
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:11.880097Z","iopub.execute_input":"2023-01-12T23:09:11.880507Z","iopub.status.idle":"2023-01-12T23:09:11.891963Z","shell.execute_reply.started":"2023-01-12T23:09:11.880472Z","shell.execute_reply":"2023-01-12T23:09:11.890876Z"}}
+# The standard error of the mean is the standard deviation of the distribution of sample means and is equal to the population standard deviation divided by the square root of the sample size.
+analytical_std = pop_std/np.sqrt(sample_size)
+
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:11.893218Z","iopub.execute_input":"2023-01-12T23:09:11.894093Z","iopub.status.idle":"2023-01-12T23:09:11.903760Z","shell.execute_reply.started":"2023-01-12T23:09:11.894052Z","shell.execute_reply":"2023-01-12T23:09:11.902501Z"}}
+z_critical = norm.ppf(1-alpha/2)
+# Then we can use this z-value to calculate the lower and upper bounds of the 95% confidence interval for the population mean.
+CI_lower_analytical = pop_mean - z_critical * analytical_std
+CI_upper_analytical = pop_mean + z_critical * analytical_std
+
+# %% [markdown]
+# ## Analytical Solution Results
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:11.906700Z","iopub.execute_input":"2023-01-12T23:09:11.907146Z","iopub.status.idle":"2023-01-12T23:09:11.916041Z","shell.execute_reply.started":"2023-01-12T23:09:11.907110Z","shell.execute_reply":"2023-01-12T23:09:11.914538Z"}}
+print("Standard deviation (Analytical Method): ", analytical_std)
+print("95% Confidence Interval (Analytical Method): (", CI_lower_analytical, ", ", CI_upper_analytical, ")")
+
+# %% [markdown]
+# # Simulation 
+# Sampling samples from the populatio
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:11.917488Z","iopub.execute_input":"2023-01-12T23:09:11.918091Z","iopub.status.idle":"2023-01-12T23:09:12.047560Z","shell.execute_reply.started":"2023-01-12T23:09:11.918047Z","shell.execute_reply":"2023-01-12T23:09:12.046165Z"}}
+# Create an empty list to store the sample means
+sample_means = []
+
+# Run the simulation
+for i in range(num_sims):
+    # Draw a random sample from the population
+    sample = np.random.normal(pop_mean, pop_std, sample_size) # np.random.normal is a function that generates random numbers from a normal distribution with a specified mean and standard deviation.
+    # Calculate the mean of the sample
+    sample_mean = np.mean(sample) # np.mean is a function that calculates the mean of a given array or list of numbers.
+    # Append the sample mean to the list
+    sample_means.append(sample_mean)
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:12.049021Z","iopub.execute_input":"2023-01-12T23:09:12.049443Z","iopub.status.idle":"2023-01-12T23:09:12.058578Z","shell.execute_reply.started":"2023-01-12T23:09:12.049406Z","shell.execute_reply":"2023-01-12T23:09:12.057180Z"}}
+# Simulation Method for Confidence Interval
+# Sort the sample means
+sample_means.sort()
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:12.060276Z","iopub.execute_input":"2023-01-12T23:09:12.060803Z","iopub.status.idle":"2023-01-12T23:09:12.074387Z","shell.execute_reply.started":"2023-01-12T23:09:12.060769Z","shell.execute_reply":"2023-01-12T23:09:12.072913Z"}}
+# Find the lower and upper bounds of the 95% confidence interval
+CI_lower_simulation = np.percentile(sample_means, alpha/2*100)
+CI_upper_simulation = np.percentile(sample_means, (1-alpha/2)*100)
+
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:12.076244Z","iopub.execute_input":"2023-01-12T23:09:12.076606Z","iopub.status.idle":"2023-01-12T23:09:12.086813Z","shell.execute_reply.started":"2023-01-12T23:09:12.076575Z","shell.execute_reply":"2023-01-12T23:09:12.085742Z"}}
+simulation_std = np.std(sample_means)
+
+# %% [markdown]
+# ## Simulation Results
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:12.088207Z","iopub.execute_input":"2023-01-12T23:09:12.089223Z","iopub.status.idle":"2023-01-12T23:09:12.099907Z","shell.execute_reply.started":"2023-01-12T23:09:12.089172Z","shell.execute_reply":"2023-01-12T23:09:12.098596Z"}}
+print("Standard deviation (Simulation Method): ", simulation_std)
+print("95% Confidence Interval (Simulation Method): (", CI_lower_simulation, ", ", CI_upper_simulation, ")")
+
+
+# %% [markdown]
+# ## Results Comparsion
+
+# %% [code] {"execution":{"iopub.status.busy":"2023-01-12T23:09:12.102734Z","iopub.execute_input":"2023-01-12T23:09:12.103060Z","iopub.status.idle":"2023-01-12T23:09:12.113343Z","shell.execute_reply.started":"2023-01-12T23:09:12.103035Z","shell.execute_reply":"2023-01-12T23:09:12.112278Z"}}
+# Compare the two methods for Standard deviation
+print("Difference between std: ", analytical_std - simulation_std)
+
+# Compare the two methods for Confidence Interval
+print("Difference between lower bound: ",CI_lower_analytical - CI_lower_simulation)
+print("Difference between upper bound: ",CI_upper_analytical - CI_upper_simulation)
+
