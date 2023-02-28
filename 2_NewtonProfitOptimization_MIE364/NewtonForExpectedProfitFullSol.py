@@ -5,52 +5,8 @@ from scipy.stats import norm
 import numpy as np
 from math import factorial as fact
 import pdb
-def negative_profit_function(x,const):
-    # x should be a np.array of size(2,)
-    # x[0] is mu and x[1] is lambda
-    # const should be a np.array of size(6,)
-    #l_1=const[0]
-    #l_2=const[1]
-    #a_1=const[2]
-    #a_2=const[3]
-    #c=const[4]
-    #c_1=const[5]
-    #c_2=const[6]
-    """
-    This function defines the cost function that we are trying to minimize.
-    In this example, the cost function is the negative of the expected profit function
-    """
-    l_1=const[0]
-    l_2=const[1]
-    a_1=const[2]
-    a_2=const[3]
-    c=const[4]
-    c_1=const[5]
-    c_2=const[6]
-    
-    
-    mu=x[0]
-    lmda=x[1]
-    
-    profit=(a_2+
-            (a_1-a_2)*(1-norm.cdf(l_1-mu))*  \
-            np.sum([(lmda**j)*np.exp(-lmda)/fact(j) for j in np.arange(0,l_2+1)]))-  \
-            (c+c_1*mu+c_2*np.exp(l_2-lmda+lmda/np.exp(1)))    
-    
-    return -profit
-
 
 def revenue_function(x,const):
-    # x should be a np.array of size(2,)
-    # x[0] is mu and x[1] is lambda
-    # const should be a np.array of size(6,)
-    #l_1=const[0]
-    #l_2=const[1]
-    #a_1=const[2]
-    #a_2=const[3]
-    #c=const[4]
-    #c_1=const[5]
-    #c_2=const[6]
     """
     This function defines the cost function that we are trying to minimize.
     In this example, the cost function is the negative of the expected profit function
@@ -62,28 +18,20 @@ def revenue_function(x,const):
     c=const[4]
     c_1=const[5]
     c_2=const[6]
+    sigma=const[7]
     
     
     mu=x[0]
     lmda=x[1]
     
     revenuce=(a_2+
-            (a_1-a_2)*(1-norm.cdf(l_1-mu))*  \
+            (a_1-a_2)*(1-norm.cdf((l_1-mu)/sigma))*  \
             np.sum([(lmda**j)*np.exp(-lmda)/fact(j) for j in np.arange(0,l_2+1)]))
     
     return revenuce
 
 def cost_function(x,const):
-    # x should be a np.array of size(2,)
-    # x[0] is mu and x[1] is lambda
-    # const should be a np.array of size(6,)
-    #l_1=const[0]
-    #l_2=const[1]
-    #a_1=const[2]
-    #a_2=const[3]
-    #c=const[4]
-    #c_1=const[5]
-    #c_2=const[6]
+
     """
     This function defines the cost function that we are trying to minimize.
     In this example, the cost function is the negative of the expected profit function
@@ -95,6 +43,7 @@ def cost_function(x,const):
     c=const[4]
     c_1=const[5]
     c_2=const[6]
+    sigma=const[7]
     
     
     mu=x[0]
@@ -103,7 +52,27 @@ def cost_function(x,const):
     
     return cost
 # %%
+def negative_profit_function(x,const):
 
+    """
+    This function defines the cost function that we are trying to minimize.
+    In this example, the cost function is the negative of the expected profit function
+    """
+    l_1=const[0]
+    l_2=const[1]
+    a_1=const[2]
+    a_2=const[3]
+    c=const[4]
+    c_1=const[5]
+    c_2=const[6]
+    sigma=const[7]
+    
+    
+    mu=x[0]
+    lmda=x[1]
+    profit= revenue_function(x,const)- cost_function(x,const)    
+    
+    return -profit
 # Define the gradient and hessian of the cost function
 # And also the analytical solution
 def gradient_function(x,const):
@@ -114,16 +83,17 @@ def gradient_function(x,const):
     c=const[4]
     c_1=const[5]
     c_2=const[6]
+    sigma=const[7]
     
     
     mu=x[0]
     lmda=x[1]
-    profit_mu=((a_1-a_2)*norm.pdf(l_1-mu)* 
+    profit_mu=(((a_1-a_2)/sigma)*norm.pdf((l_1-mu)/sigma)* 
             np.sum([(lmda**j)*np.exp(-lmda)/fact(j) for j in np.arange(0,l_2+1)])-   #This is the same term from the cost function
             c_1)
-    profit_lmbda=-(a_1-a_2)*(1-norm.cdf(l_1-mu))*  \
+    profit_lmbda=-(a_1-a_2)*(1-norm.cdf((l_1-mu)/sigma))*  \
             (lmda**l_2)*np.exp(-lmda)/fact(l_2) -  \
-            (c_2*(np.exp(-1)-1)*np.exp(l_2-lmda+lmda/np.exp(1)))            
+            (c_2*(np.exp(-1)-1)*np.exp(l_2-lmda+lmda*np.exp(-1)))            
     grad_vector=np.array([profit_mu,profit_lmbda])
     
     
@@ -140,15 +110,16 @@ def hessian_function(x,const):
     c=const[4]
     c_1=const[5]
     c_2=const[6]
+    sigma=const[7]
     
     
     mu=x[0]
     lmda=x[1]
-    profit_mu2=(a_1-a_2)*(l_1-mu)*norm.pdf(l_1-mu)*np.sum([(lmda**j)*np.exp(-lmda)/fact(j) for j in np.arange(0,l_2+1)])
+    profit_mu2=(a_1-a_2)*((l_1-mu)/(sigma**3))*norm.pdf((l_1-mu)/sigma)*np.sum([(lmda**j)*np.exp(-lmda)/fact(j) for j in np.arange(0,l_2+1)])
     
-    profit_lmbda_mu=-(a_1-a_2)*norm.pdf(l_1-mu)*np.exp(-lmda)*(lmda**l_2)/fact(l_2)      
+    profit_lmbda_mu=-(a_1-a_2)*(sigma**-1)*norm.pdf((l_1-mu)/sigma)*np.exp(-lmda)*(lmda**l_2)/fact(l_2)      
     
-    profit_lmbda_2=-(a_1-a_2)*(1-norm.cdf(l_1-mu))*np.exp(-lmda) \
+    profit_lmbda_2=-(a_1-a_2)*(1-norm.cdf((l_1-mu)/sigma))*np.exp(-lmda) \
             *((lmda**(l_2-1))/fact(l_2-1)-(lmda**(l_2))/fact(l_2))-  \
             c_2*((np.exp(-1)-1)**2)*np.exp(l_2-lmda+lmda/np.exp(1)) 
     
@@ -159,7 +130,7 @@ def hessian_function(x,const):
     globals().update(locals())
     return -hess_matrix
 # %%
-const=[52.5,3,20,5,4,0.05,0.1]
+const=[52.5,3,20,5,4,0.05,0.1,0.7] #sigma is last value in this list
 x=[54,1]
 profit=-negative_profit_function(x,const)
 gradient=gradient_function(x,const)
@@ -183,8 +154,8 @@ print('Solution is starting')
 
 #x_0 = np.array([52.0, 2.0]) #Newton: Diverge, GD: Converge 
 
-x_0 = np.array([53.1, 2.0]) #Newton: Converge Intresting, GD: Converge 
-#x_0 = np.array([53.5, 2.0]) #Newton: Converge, GD: Converge 
+#x_0 = np.array([53.1, 2.0]) #Newton: Converge Intresting, GD: Converge 
+x_0 = np.array([53.5, 2.0]) #Newton: Converge, GD: Converge 
 #x_0 = np.array([51.0, 2.0]) #Newton: Diverge, GD: Converge 
 '''
 x_0 = np.array([58.0, 1.0]) #Newton: Singular Matrix, GD: Converge 
@@ -206,6 +177,22 @@ for i in range(max_iterations):
     hess = hessian_function(x_0,const)
     # Compute Newton step
     step = -np.linalg.solve(hess, grad)
+    '''
+    calculates the step direction using the Hessian matrix and the gradient of the objective function. Specifically, it solves the linear system H_k * step = -g_k for the step direction step, where H_k is the Hessian matrix at the current point and g_k is the gradient of the objective function at the current point. The negative sign in front of the np.linalg.solve function indicates that we want to move in the direction of steepest descent.
+
+    Note that this code assumes that the Hessian matrix is invertible. If the Hessian matrix is not invertible, then np.linalg.solve will raise an error. In such cases, a modified version of the algorithm, such as a quasi-Newton method, may be needed to compute the step direction.
+    
+    If the Hessian matrix is not invertible, it can tell us several things about the objective function we are trying to optimize. Here are a few possible interpretations:
+
+    The objective function has a flat region: If the Hessian matrix has a zero eigenvalue at a point, it indicates that the objective function has a flat region around that point. In other words, the function does not change much in any direction at that point, so any direction could be a valid direction of descent. This can make it difficult for an optimization algorithm to find a valid step direction and may require using a quasi-Newton or other regularization method.
+
+    The objective function has a saddle point: If the Hessian matrix has both positive and negative eigenvalues at a point, it indicates that the objective function has a saddle point at that point. A saddle point is a point where the function has a critical point (gradient equals zero), but it is not a local minimum or maximum. This can make it difficult for an optimization algorithm to find a valid direction of descent.
+
+    The objective function is not twice differentiable: If the Hessian matrix is not defined or not continuous at a point, it indicates that the objective function is not twice differentiable at that point. This means that the function may have discontinuities or sharp corners that prevent the second-order partial derivatives from being defined or continuous. In such cases, optimization algorithms that rely on the Hessian matrix may not be applicable or may require modifications to handle these irregularities.
+
+    These are just a few possible interpretations, and the specific meaning of a non-invertible Hessian matrix can depend on the specific optimization problem and the characteristics of the objective function.
+
+    '''
     #step =-np.linalg.pinv(hess)@grad
     # Compute Gradient Descent step
     #step = -grad; step_size=step_size*0.9
@@ -239,7 +226,7 @@ elif (eigenvalues < 0).all():
     print("The final solution is a local maximum.")
 else:
     print("The final solution is neither a local minimum nor a local maximum.")
-
+#exit(0)
 # %%
 # Create a grid of points 
 x = np.linspace(50, 58, 500)
@@ -269,7 +256,8 @@ ax.scatter(solution_path[:, 0], solution_path[:, 1],np.array(solution_path_cost)
            'k-o')
 ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}'
+)
 
 ax.set_zlabel('profit_function')
 ax.view_init(elev=45, azim=120)
@@ -312,7 +300,7 @@ ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
 ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
 ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 
 cbar.set_label("Profit")
 plt.show()
@@ -328,7 +316,7 @@ ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
 ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
 ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 
 cbar.set_label("Cost")
 plt.show()
@@ -358,15 +346,17 @@ ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
 ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
 ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 
 cbar.set_label("Profit")
 plt.show()
 
 
 
+
 # %%
 # Create a grid of points 
+exit(0)
 x = np.linspace(55, 57, 500)
 y = np.linspace(0.75, 1.25, 100)
 X, Y = np.meshgrid(x, y)
@@ -393,7 +383,7 @@ ax.scatter(solution_path[:, 0], solution_path[:, 1],np.array(solution_path_cost)
 ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
 ax.set_zlabel('profit_function')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 
 ax.view_init(elev=45, azim=120)
 plt.show()
@@ -435,7 +425,7 @@ ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
 ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
 ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 
 cbar.set_label("Profit")
 plt.show()
@@ -482,7 +472,7 @@ ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
 ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
 
 cbar.set_label("Profit")
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 plt.show()
 
 
@@ -524,7 +514,7 @@ ax.scatter(solution_path[:, 0], solution_path[:, 1],np.array(solution_path_cost)
 ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
 ax.set_zlabel('profit_function')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 ax.set_xlim(xrange)
 ax.set_ylim(yrange)
 
@@ -572,7 +562,7 @@ ax.set_xlabel('$\mu$')
 ax.set_ylabel('$\lambda$')
 ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
 ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 ax.set_xlim(xrange)
 ax.set_ylim(yrange)
 cbar.set_label("Profit")
@@ -620,5 +610,7 @@ ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
 ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
 
 cbar.set_label("Profit")
-plt.title(f'intial in black {[solution_path[0, 0], solution_path[0, 1]]}, and final solution in red, method Newton')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 plt.show()
+
+# %%
