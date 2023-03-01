@@ -116,6 +116,7 @@ def hessian_function(x,const):
     mu=x[0]
     lmda=x[1]
     profit_mu2=(a_1-a_2)*((l_1-mu)/(sigma**3))*norm.pdf((l_1-mu)/sigma)*np.sum([(lmda**j)*np.exp(-lmda)/fact(j) for j in np.arange(0,l_2+1)])
+    #profit_mu2=(a_1-a_2)*((l_1-mu)/(sigma**1))*norm.pdf((l_1-mu)/sigma)*np.sum([(lmda**j)*np.exp(-lmda)/fact(j) for j in np.arange(0,l_2+1)])
     
     profit_lmbda_mu=-(a_1-a_2)*(sigma**-1)*norm.pdf((l_1-mu)/sigma)*np.exp(-lmda)*(lmda**l_2)/fact(l_2)      
     
@@ -130,8 +131,8 @@ def hessian_function(x,const):
     globals().update(locals())
     return -hess_matrix
 # %%
-const=[52.5,3,20,5,4,0.05,0.1,0.7] #sigma is last value in this list
-x=[54,1]
+const=[52.5,3,20,5,4,0.05,0.1,2] #sigma is last value in this list
+x=[54.74185012,0.89004805]
 profit=-negative_profit_function(x,const)
 gradient=gradient_function(x,const)
 hessian=hessian_function(x,const)
@@ -160,10 +161,10 @@ x_0 = np.array([53.5, 2.0]) #Newton: Converge, GD: Converge
 '''
 x_0 = np.array([58.0, 1.0]) #Newton: Singular Matrix, GD: Converge 
 '''
-
+x_0 = np.array([54.74185012, 0.89004805]) 
 step_size=1 # You migh need to lower this value if using Gradient Descent
 tolerance = 1e-6
-max_iterations = 20
+max_iterations = 100
 # Create an empty list to store the solution path
 solution_path = []
 solution_path_cost = []
@@ -215,7 +216,7 @@ for i in range(max_iterations):
 
 # Print final solution
 print("Final solution:", x_0)
-
+print(f"sigma:", const[-1])
 # Check if the final solution is a local minimum or a local maximum
 # If you don't define the hessian function the following check can not be done 
 # and the code will give you an error 
@@ -226,10 +227,11 @@ elif (eigenvalues < 0).all():
     print("The final solution is a local maximum.")
 else:
     print("The final solution is neither a local minimum nor a local maximum.")
-#exit(0)
+
 # %%
+solution_path = np.array(solution_path)
 # Create a grid of points 
-x = np.linspace(50, 58, 500)
+x = np.linspace(50, 60, 500)
 y = np.linspace(-2, 7, 100)
 X, Y = np.meshgrid(x, y)
 Z_Profit=X*0
@@ -244,7 +246,25 @@ for counter_x in np.arange(X.shape[0]):
 
 # %%
 # Convert solution path to a numpy array
-solution_path = np.array(solution_path)
+
+
+
+fig, ax = plt.subplots(dpi=300)
+cbar = fig.colorbar(ax.contourf(X, Y, Z_Profit))
+ax.plot(solution_path[:, 0], solution_path[:, 1], 'o-')
+ax.set_xlabel('$\mu$')
+ax.set_ylabel('$\lambda$')
+ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
+ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
+plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
+
+cbar.set_label("Profit")
+plt.show()
+
+exit(1)
+# %%
+
+
 
 
 
@@ -292,18 +312,7 @@ plt.show()
 
 # %%
 
-# %%
-fig, ax = plt.subplots(dpi=300)
-cbar = fig.colorbar(ax.contourf(X, Y, Z_Profit))
-ax.plot(solution_path[:, 0], solution_path[:, 1], 'o-')
-ax.set_xlabel('$\mu$')
-ax.set_ylabel('$\lambda$')
-ax.plot(solution_path[0, 0], solution_path[0, 1], 'k-o')
-ax.plot(solution_path[-1, 0], solution_path[-1, 1], 'r-o')
-plt.title(f'intial in black ({solution_path[0,0]}, {solution_path[0,1]}),\n and final solution in red, method Newton\n sigma={const[7]}')
 
-cbar.set_label("Profit")
-plt.show()
 # %%
 Z = cost_function(np.array([X, Y]),const)
 #Z = revenue_function(np.array([X, Y]),const)
